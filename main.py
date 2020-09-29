@@ -1,5 +1,16 @@
-import crossword
-import word
+from Crossword import *
+a_cross = "res/crossword_CB_v2.txt"
+a_dict = "res/diccionari_CB_v2.txt"
 
-a_cross = open("res/crossword_A_v2.txt", "r")
-a_dict = open("res/diccionari_A.txt", "r")
+
+def main():
+    c = Crossword(a_dict, a_cross)
+
+    print(np.array_equal(b, c.intersections))
+
+
+
+
+
+if __name__ == "__main__":
+    main()
