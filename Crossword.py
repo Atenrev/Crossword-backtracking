@@ -1,4 +1,4 @@
-__authors__='Biel Castaño Segade \n Sergi Masip Cabeza \n Jordi Xhafa Daci'
+__authors__ = 'Biel Castaño Segade\nSergi Masip Cabeza\nJordi Xhafa Daci'
 # _________________________________________________________________________________________
 # Coneixement, Raonament i Incertesa
 # Grau en Enginyeria Informatica
@@ -6,12 +6,13 @@ __authors__='Biel Castaño Segade \n Sergi Masip Cabeza \n Jordi Xhafa Daci'
 # Universitat Autonoma de Barcelona
 # _________________________________________________________________________________________
 
-import numpy as np
-from Word import *
-from WordCoordinates import *
 
+import numpy as np
+from word import *
+from word_coordinates import *
 WHITE = '0'
 BLACK = '#'
+
 
 def read_crossword_board(filename: str):
     """
@@ -150,17 +151,21 @@ class Crossword:
             for j in range(n):
                 if crossword_board[i][j] == WHITE:
 
-                    horizontal_word, horizontal_size = search_horizontal_word(crossword_board, i, j)
-                    vertical_word, vertical_size = search_vertical_word(crossword_board, i, j)
+                    horizontal_word, horizontal_size = search_horizontal_word(
+                        crossword_board, i, j)
+                    vertical_word, vertical_size = search_vertical_word(
+                        crossword_board, i, j)
 
                     if horizontal_word:
                         self.words.append(Word(horizontal_size, identifier))
-                        self.coordinates[identifier] = WordCoordinates(i, j, Direction.HORIZONTAL, horizontal_size)
+                        self.coordinates[identifier] = WordCoordinates(
+                            i, j, Direction.HORIZONTAL, horizontal_size)
                         identifier += 1
 
                     if vertical_word:
                         self.words.append(Word(vertical_size, identifier))
-                        self.coordinates[identifier] = WordCoordinates(i, j, Direction.VERTICAL, vertical_size)
+                        self.coordinates[identifier] = WordCoordinates(
+                            i, j, Direction.VERTICAL, vertical_size)
                         identifier += 1
 
     def find_intersections(self):
@@ -173,7 +178,8 @@ class Crossword:
 
         for i in range(n):
             for j in range(i+1, n):
-                intersection, position_1, position_2 = self.coordinates[i].exists_intersection(self.coordinates[j])
+                intersection, position_1, position_2 = self.coordinates[i].exists_intersection(
+                    self.coordinates[j])
                 if intersection:
                     self.intersections[i][j] = position_1
                     self.intersections[j][i] = position_2
@@ -194,7 +200,6 @@ class Crossword:
         words_aux.sort(key=Word.get_identifier)
         for i in range(len(words_aux)):
             word = words_aux[i]
-            print("Paraula ", i, ": ", word.word )
+            print("Paraula ", i, ": ", word.word)
             self.coordinates[word.identifier].print_coordinates()
             print("\n")
-

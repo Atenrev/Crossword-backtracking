@@ -1,5 +1,6 @@
-from Crossword import *
+from crossword import *
 import copy
+
 
 def satisfies_restrictions(word: Word, LVA: list, R: np.array):
     """
@@ -18,6 +19,7 @@ def satisfies_restrictions(word: Word, LVA: list, R: np.array):
             return False
     return True
 
+
 """
 La meva idea és que a partir d'ara amaguem tots els mètodes de les classes, amb la funció satisfà restriccions
 feta no caldria cridar res en aquelles classes per fer aquesta funció(crec)
@@ -34,5 +36,7 @@ No oblidar el que són els paràmetres, no tenen "res" a veure amb la classe cro
 ######################################################
     
 """
+
+
 def backtracking(LVA: list, LVNA: list, R: np.array, D: dict):
     return True, []
