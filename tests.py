@@ -10,23 +10,24 @@ class TestCases(unittest.TestCase):
     def setUp(self):
         a_cross_CB = "res/crossword_CB_v2.txt"
         a_dict_CB = "res/diccionari_CB_v2.txt"
-        self.cw_CB = Crossword(a_dict_CB, a_cross_CB)
+        self.cw_CB = Crossword.from_filenames(a_dict_CB, a_cross_CB)
 
         a_cross_A = "res/crossword_A_v2.txt"
         a_dict_A = "res/diccionari_A.txt"
-        self.cw_A = Crossword(a_dict_A, a_cross_A)
+        self.cw_A = Crossword.from_filenames(a_dict_A, a_cross_A)
 
         a_cross_empty = "test/crossword_empty.txt"
         a_dict_empty = "test/diccionari_empty.txt"
-        self.cw_empty = Crossword(a_dict_empty, a_cross_empty)
+        self.cw_empty = Crossword.from_filenames(a_dict_empty, a_cross_empty)
 
         a_cross_short = "test/crossword_short.txt"
         a_dict_short = "test/diccionari_short.txt"
-        self.cw_short = Crossword(a_dict_short, a_cross_short)
+        self.cw_short = Crossword.from_filenames(a_dict_short, a_cross_short)
 
         a_cross_medium = "test/crossword_medium.txt"
         a_dict_medium = "test/diccionari_medium.txt"
-        self.cw_medium = Crossword(a_dict_medium, a_cross_medium)
+        self.cw_medium = Crossword.from_filenames(
+            a_dict_medium, a_cross_medium)
 
     def test_exists_intersection(self):
         coordinates_1 = WordCoordinates(0, 0, Direction.HORIZONTAL, 5)
@@ -147,6 +148,10 @@ class TestCases(unittest.TestCase):
             word_4, lva, self.cw_medium.intersections))
 
     def test_backtracking(self):
+        expected_words_short = [Word(4, 0), Word(4, 1), Word(2, 2)]
+        expected_words_short[0].set_word("HOLA")
+        expected_words_short[1].set_word("ADEU")
+        expected_words_short[2].set_word("TU")
 
         expected_words_medium = []
         for i in range(5):
@@ -156,11 +161,6 @@ class TestCases(unittest.TestCase):
         expected_words_medium[2].set_word("AUXILI")
         expected_words_medium[3].set_word("APOLLO")
         expected_words_medium[4].set_word("PERICO")
-
-        expected_words_short = [Word(4, 0), Word(4, 1), Word(2, 2)]
-        expected_words_short[0].set_word("HOLA")
-        expected_words_short[1].set_word("ADEU")
-        expected_words_short[2].set_word("TU")
 
         solucio_short, words_short = backtracking([], copy.deepcopy(self.cw_short.words),
                                                   copy.deepcopy(
@@ -172,7 +172,11 @@ class TestCases(unittest.TestCase):
                                                         self.cw_medium.intersections),
                                                     copy.deepcopy(self.cw_medium.candidates))
 
-        # self.assertTrue(solucio_short)
-        # self.assertTrue(solucio_medium)
-        #self.assertListEqual(words_medium, expected_words_medium)
-        #self.assertListEqual(words_short, expected_words_short)
+        self.assertTrue(solucio_short)
+        self.assertTrue(solucio_medium)
+        self.assertListEqual(words_medium, expected_words_medium)
+        self.assertListEqual(words_short, expected_words_short)
+
+
+if __name__ == '__main__':
+    unittest.main()

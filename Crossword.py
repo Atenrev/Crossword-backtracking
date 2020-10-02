@@ -8,6 +8,7 @@ __authors__ = 'Biel Castaño Segade\nSergi Masip Cabeza\nJordi Xhafa Daci'
 
 
 import numpy as np
+import copy
 from word import *
 from word_coordinates import *
 WHITE = '0'
@@ -107,19 +108,36 @@ class Crossword:
                 ....
             }
 
+    self.board_size: a variable to store the dimensions of the board
     """
 
-    def __init__(self,  filename_dictionary: str, filename_crossword: str):
+    def __init__(self):
         self.candidates = {}
         self.words = []
         self.intersections = []
         self.coordinates = {}
+        self.board_size = 0
 
-        self.read_candidates(filename_dictionary)
-
+    @classmethod
+    def from_filenames(cls, filename_dictionary: str, filename_crossword: str):
+        instance = cls()
+        instance.read_candidates(filename_dictionary)
         crossword_board = read_crossword_board(filename_crossword)
-        self.analyze_crossword_board(crossword_board)
-        self.find_intersections()
+        instance.board_size = len(crossword_board)
+        instance.analyze_crossword_board(crossword_board)
+        instance.find_intersections()
+        instance.words.sort(key=Word.get_size, reverse=True)
+        return instance
+
+    @classmethod
+    def from_crossword(cls, cw):
+        instance = cls()
+        instance.candidates = copy.deepcopy(cw.candidates)
+        instance.words = copy.deepcopy(cw.words)
+        instance.intersections = copy.deepcopy(cw.intersections)
+        instance.coordinates = copy.deepcopy(cw.coordinates)
+        instance.board_size = cw.board_size
+        return instance
 
     def read_candidates(self, filename: str):
         """
@@ -196,10 +214,44 @@ class Crossword:
             self.set_word(word.identifier, word.word)
 
     def print_words(self):
-        words_aux = self.words
+        words_aux = list(self.words)
         words_aux.sort(key=Word.get_identifier)
+
         for i in range(len(words_aux)):
             word = words_aux[i]
-            print("Paraula ", i, ": ", word.word)
+            print("Paraula {}: {}".format(i, word.word))
             self.coordinates[word.identifier].print_coordinates()
             print("\n")
+
+    def __str__(self):
+        board = [['#' for j in range(self.board_size)]
+                 for i in range(self.board_size)]
+        words_aux = list(self.words)
+        pass
+
+        for i in range(len(words_aux)):
+            word = words_aux[i]
+            coord = self.coordinates[word.identifier]
+
+            if coord.direction == Direction.HORIZONTAL:
+                if word.word != "":
+                    for y in range(coord.y, coord.y+coord.size):
+                        board[coord.x][y] = word[y-coord.y]
+                else:
+                    for y in range(coord.y, coord.y+coord.size):
+                        board[coord.x][y] = '0'
+            else:
+                if word.word != "":
+                    for x in range(coord.x, coord.x+coord.size):
+                        board[x][coord.y] = word[x-coord.x]
+                else:
+                    for x in range(coord.x,  coord.x+coord.size):
+                        board[x][coord.y] = '0'
+
+        board_str = ""
+        for row in board:
+            for col in row:
+                board_str += col + ' '
+            board_str += "\n"
+
+        return board_str

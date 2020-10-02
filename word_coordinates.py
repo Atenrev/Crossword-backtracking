@@ -10,9 +10,9 @@ class WordCoordinates:
     """
     A class for keeping all the data regarding the position of a word in the crossword
 
-    self.i: An int containing the first coordinate of the first letter of the word (starting at 0)
+    self.x: An int containing the first coordinate of the first letter of the word (starting at 0)
 
-    self.j: An int containing the second coordinate of the first letter of the word (starting at 0)
+    self.y: An int containing the second coordinate of the first letter of the word (starting at 0)
 
     self.direction: A bool that indicates the direction of the word
             (horizontal from left to right or vertical from top to bottom)
@@ -28,7 +28,7 @@ class WordCoordinates:
 
     def __eq__(self, word_coordinates):
         return self.x == word_coordinates.x and self.y == word_coordinates.y \
-               and self.direction == word_coordinates.direction and self.size == word_coordinates.size
+            and self.direction == word_coordinates.direction and self.size == word_coordinates.size
 
     def __hash__(self):
         return hash((self.x, self.y, self.direction, self.size))
@@ -78,7 +78,7 @@ class WordCoordinates:
                 position_horizontal (int): Position of the intersection on the word represented by self.
                 position_vertical (int): Position of the intersection on the word represented by word_coordinates.
         """
-        if self.direction != word_coordinates.direction: #if not, we assume there is no intersection
+        if self.direction != word_coordinates.direction:  # if not, we assume there is no intersection
             if self.direction == Direction.HORIZONTAL:
                 return self.exists_intersection_horizontal(word_coordinates)
             return self.exists_intersection_vertical(word_coordinates)
@@ -88,5 +88,5 @@ class WordCoordinates:
         direction = "Vertical"
         if self.direction == Direction.HORIZONTAL:
             direction = "Horitzontal"
-        print("Coordenades: (", self.x, ",", self.y, "), Direcció: ", direction, ", Tamany: ", self.size)
-
+        print("Coordenades: (", self.x, ",", self.y, "), Direcció: ",
+              direction, ", Tamany: ", self.size)
