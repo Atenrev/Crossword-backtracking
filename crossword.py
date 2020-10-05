@@ -127,6 +127,8 @@ class Crossword:
         instance.analyze_crossword_board(crossword_board)
         instance.find_intersections()
         instance.words.sort(key=Word.get_size, reverse=True)
+        instance.words.sort(key=lambda x: len(
+            np.where(instance.intersections[x.identifier] != -1)), reverse=True)
         return instance
 
     @classmethod
@@ -175,13 +177,25 @@ class Crossword:
                         crossword_board, i, j)
 
                     if horizontal_word:
-                        self.words.append(Word(horizontal_size, identifier))
+                        self.words.append(
+                            Word(
+                                horizontal_size,
+                                identifier,
+                                list(self.candidates[horizontal_size])
+                            )
+                        )
                         self.coordinates[identifier] = WordCoordinates(
                             i, j, Direction.HORIZONTAL, horizontal_size)
                         identifier += 1
 
                     if vertical_word:
-                        self.words.append(Word(vertical_size, identifier))
+                        self.words.append(
+                            Word(
+                                vertical_size,
+                                identifier,
+                                list(self.candidates[vertical_size])
+                            )
+                        )
                         self.coordinates[identifier] = WordCoordinates(
                             i, j, Direction.VERTICAL, vertical_size)
                         identifier += 1

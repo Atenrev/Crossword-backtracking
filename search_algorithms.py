@@ -38,7 +38,7 @@ No oblidar el que són els paràmetres, no tenen "res" a veure amb la classe cro
 """
 
 
-def backtracking(assigned: list, not_assigned: list, R: np.array, C: dict):
+def backtracking_raw(assigned: list, not_assigned: list, R: np.array, C: dict):
     """
      Recursive method that will try to fill in all the whitespaces of the crossword.
         Args:
@@ -63,7 +63,7 @@ def backtracking(assigned: list, not_assigned: list, R: np.array, C: dict):
             idx = C[word.size].index(candidate)
             C[word.size].remove(candidate)
             assigned.append(not_assigned.pop(0))
-            success, result = backtracking(
+            success, result = backtracking_raw(
                 assigned, not_assigned, R, C)
 
             if success:
@@ -71,5 +71,59 @@ def backtracking(assigned: list, not_assigned: list, R: np.array, C: dict):
             else:
                 not_assigned.insert(0, assigned.pop())
                 C[word.size].insert(idx, candidate)
+
+    return False, []
+
+
+def forward_checking(assigned_word: Word, not_assigned: list, R: np.array):
+    for word in not_assigned:
+        temp = []
+
+        while word.candidates:
+            c = word.candidates.pop()
+            word.set_word(c)
+            if assigned_word.is_compatible(word, R):
+                temp.append(c)
+
+        word.candidates = temp
+        word.set_word("")
+
+
+def backtracking(assigned: list, not_assigned: list, R: np.array):
+    """
+     Recursive method that will try to fill in all the whitespaces of the crossword.
+        Args:
+            assigned (list): Contains the list of the Word previously assigned.
+            not_assigned (list): Contains the list of the Word to be assigned.
+            R (numpy array): Matrix containing the restrictions of the problem (the intersections of the crossword).
+        Returns:
+            (bool): True if a solution is found.
+            (list): List containing the solution (in case that it exists).
+    """
+
+    if not_assigned == []:
+        return True, assigned
+
+    new_assigned = copy.deepcopy(assigned)
+    new_not_assigned = copy.deepcopy(not_assigned)
+    word = new_not_assigned.pop(0)
+    candidates = word.candidates
+
+    for candidate in candidates:
+        word.set_word(candidate)
+
+        if satisfies_restrictions(word, new_assigned, R):
+            new_assigned.append(word)
+            candidates.remove(candidate)
+
+            for w in new_not_assigned:
+                if candidate in w.candidates:
+                    w.candidates.remove(candidate)
+
+            success, result = backtracking(new_assigned, new_not_assigned, R)
+
+            if success:
+                forward_checking(word, new_not_assigned, R)
+                return True, result
 
     return False, []

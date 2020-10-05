@@ -14,22 +14,20 @@ def main():
         [],
         copy.deepcopy(cb.words),
         copy.deepcopy(cb.intersections),
-        copy.deepcopy(cb.candidates)
     )
     cb.set_words(result)
     cb.print_words()
     print(cb)
 
-    # ca = Crossword.from_filenames(a_dict, a_cross)
-    # success, result = backtracking(
-    #     [],
-    #     copy.deepcopy(ca.words),
-    #     copy.deepcopy(ca.intersections),
-    #     copy.deepcopy(ca.candidates)
-    # )
-    # ca.set_words(result)
-    # ca.print_words()
-    # print(ca)
+    ca = Crossword.from_filenames(a_dict, a_cross)
+    success, result = backtracking(
+        [],
+        copy.deepcopy(ca.words),
+        copy.deepcopy(ca.intersections),
+    )
+    ca.set_words(result)
+    ca.print_words()
+    print(ca)
 
 
 if __name__ == "__main__":

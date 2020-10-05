@@ -12,10 +12,11 @@ class Word:
     self.word: An string empty at the start, to be filled with the corresponding word found
     """
 
-    def __init__(self, size: int, identifier: int):
+    def __init__(self, size: int, identifier: int, candidates: list):
         self.identifier = identifier
         self.size = size
         self.word = ""
+        self.candidates = candidates
 
     def set_word(self, word: str):
         self.word = word
