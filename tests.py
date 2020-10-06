@@ -124,18 +124,18 @@ class TestCases(unittest.TestCase):
     def test_satisfies_restrictions(self):
         lva = []
         for i in range(3):
-            lva.append(Word(6, i))
+            lva.append(Word(6, i, []))
         lva[0].set_word("PATATA")
         lva[1].set_word("ALUMNE")
         lva[2].set_word("AUXILI")
 
-        word_1 = Word(6, 3)
+        word_1 = Word(6, 3, [])
         word_1.set_word("SASTRE")
-        word_2 = Word(6, 3)
+        word_2 = Word(6, 3, [])
         word_2.set_word("APOLLO")
-        word_3 = Word(6, 4)
+        word_3 = Word(6, 4, [])
         word_3.set_word("PIRATA")
-        word_4 = Word(6, 4)
+        word_4 = Word(6, 4, [])
         word_4.set_word("PERICO")
 
         self.assertFalse(satisfies_restrictions(
@@ -147,27 +147,27 @@ class TestCases(unittest.TestCase):
         self.assertTrue(satisfies_restrictions(
             word_4, lva, self.cw_medium.intersections))
 
-    def test_backtracking(self):
-        expected_words_short = [Word(4, 0), Word(4, 1), Word(2, 2)]
+    def test_backtracking_raw(self):
+        expected_words_short = [Word(4, 0, []), Word(4, 1, []), Word(2, 2, [])]
         expected_words_short[0].set_word("HOLA")
         expected_words_short[1].set_word("ADEU")
         expected_words_short[2].set_word("TU")
 
         expected_words_medium = []
         for i in range(5):
-            expected_words_medium.append(Word(6, i))
+            expected_words_medium.append(Word(6, i, []))
         expected_words_medium[0].set_word("PATATA")
         expected_words_medium[1].set_word("ALUMNE")
         expected_words_medium[2].set_word("AUXILI")
         expected_words_medium[3].set_word("APOLLO")
         expected_words_medium[4].set_word("PERICO")
 
-        solucio_short, words_short = backtracking([], copy.deepcopy(self.cw_short.words),
+        solucio_short, words_short = backtracking_raw([], copy.deepcopy(self.cw_short.words),
                                                   copy.deepcopy(
                                                       self.cw_short.intersections),
                                                   copy.deepcopy(self.cw_short.candidates))
 
-        solucio_medium, words_medium = backtracking([], copy.deepcopy(self.cw_medium.words),
+        solucio_medium, words_medium = backtracking_raw([], copy.deepcopy(self.cw_medium.words),
                                                     copy.deepcopy(
                                                         self.cw_medium.intersections),
                                                     copy.deepcopy(self.cw_medium.candidates))
@@ -177,6 +177,33 @@ class TestCases(unittest.TestCase):
         self.assertListEqual(words_medium, expected_words_medium)
         self.assertListEqual(words_short, expected_words_short)
 
+    def test_backtracking(self):
+        expected_words_short = [Word(4, 0, []), Word(4, 1, []), Word(2, 2, [])]
+        expected_words_short[0].set_word("HOLA")
+        expected_words_short[1].set_word("ADEU")
+        expected_words_short[2].set_word("TU")
+
+        expected_words_medium = []
+        for i in range(5):
+            expected_words_medium.append(Word(6, i, []))
+        expected_words_medium[0].set_word("PATATA")
+        expected_words_medium[1].set_word("ALUMNE")
+        expected_words_medium[2].set_word("AUXILI")
+        expected_words_medium[3].set_word("APOLLO")
+        expected_words_medium[4].set_word("PERICO")
+
+        solucio_short, words_short = backtracking([], copy.deepcopy(self.cw_short.words),
+                                                  copy.deepcopy(
+                                                      self.cw_short.intersections))
+
+        solucio_medium, words_medium = backtracking([], copy.deepcopy(self.cw_medium.words),
+                                                    copy.deepcopy(
+                                                        self.cw_medium.intersections))
+
+        self.assertTrue(solucio_short)
+        self.assertTrue(solucio_medium)
+        self.assertListEqual(words_medium, expected_words_medium)
+        self.assertListEqual(words_short, expected_words_short)
 
 if __name__ == '__main__':
     unittest.main()

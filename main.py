@@ -25,6 +25,7 @@ def main():
         copy.deepcopy(ca.words),
         copy.deepcopy(ca.intersections),
     )
+    print(success)
     ca.set_words(result)
     ca.print_words()
     print(ca)

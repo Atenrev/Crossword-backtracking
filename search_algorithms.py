@@ -20,23 +20,6 @@ def satisfies_restrictions(word: Word, assigned: list, R: np.array):
     return True
 
 
-"""
-La meva idea és que a partir d'ara amaguem tots els mètodes de les classes, amb la funció satisfà restriccions
-feta no caldria cridar res en aquelles classes per fer aquesta funció(crec)
-
-No oblidar el que són els paràmetres, no tenen "res" a veure amb la classe crossword ara ja, al main cridariem:
-
-    c = Crossword(a_dict_CB, a_cross_CB)
-    bool, list = Backtracking( [], copy.deepcopy(c.words), copy.deepcopy(c.intersections), copy.deepcopy(c.candidates)) (copy deepcopy per si es borra algo)
-    if bool:
-        c.set_words(list) (si al final definim list com una llista de objectes Word, ja està implementat el set_words)
-
-#########################################################
-        JA TINC EL TEST FET --> DESCOMENTAR A TESTCASES.PY PER VEURE SI FUNCIONA
-######################################################
-    
-"""
-
 
 def backtracking_raw(assigned: list, not_assigned: list, R: np.array, C: dict):
     """
@@ -77,16 +60,20 @@ def backtracking_raw(assigned: list, not_assigned: list, R: np.array, C: dict):
 
 def forward_checking(assigned_word: Word, not_assigned: list, R: np.array):
     for word in not_assigned:
-        temp = []
+        if word.size == assigned_word.size and assigned_word.word in word.candidates: #abans estava al backtracking, m'ho porto aquí per no recòrrer dos cops la mateixa llista, afegeixo lo del size per no fer cerca en la llista si no cal
+            word.candidates.remove(assigned_word.word)
+            if not word.candidates: #no serveix amb lo d'abaix, potser tenen el mateix tamany i no interseccionen
+                return False, []
 
-        while word.candidates:
-            c = word.candidates.pop()
-            word.set_word(c)
-            if assigned_word.is_compatible(word, R):
-                temp.append(c)
+        index_1 = R[assigned_word.identifier][word.identifier]
+        if index_1 != -1:
+            index_2 = R[word.identifier][assigned_word.identifier]
+            word.candidates = [c for c in word.candidates if c[index_2] == assigned_word[index_1]] #això s'ha de fer a pal sec, si cridem al is_compatible en bucle és mortal
 
-        word.candidates = temp
-        word.set_word("")
+            if not word.candidates:  #si en algun moment una paraula no té candidats, podem
+                return False, []
+
+    return True, not_assigned
 
 
 def backtracking(assigned: list, not_assigned: list, R: np.array):
@@ -101,29 +88,25 @@ def backtracking(assigned: list, not_assigned: list, R: np.array):
             (list): List containing the solution (in case that it exists).
     """
 
-    if not_assigned == []:
+    if not not_assigned:
         return True, assigned
 
-    new_assigned = copy.deepcopy(assigned)
-    new_not_assigned = copy.deepcopy(not_assigned)
-    word = new_not_assigned.pop(0)
+    word = not_assigned.pop(0)
     candidates = word.candidates
 
     for candidate in candidates:
         word.set_word(candidate)
 
-        if satisfies_restrictions(word, new_assigned, R):
-            new_assigned.append(word)
-            candidates.remove(candidate)
+        success_forward, result_forward = forward_checking(word, copy.deepcopy(not_assigned), R)
+        if satisfies_restrictions(word, assigned, R) and success_forward:
+            assigned.append(word)
+            new_not_assigned = result_forward
 
-            for w in new_not_assigned:
-                if candidate in w.candidates:
-                    w.candidates.remove(candidate)
-
-            success, result = backtracking(new_assigned, new_not_assigned, R)
+            success, result = backtracking(copy.deepcopy(assigned), copy.deepcopy(new_not_assigned), R)
 
             if success:
-                forward_checking(word, new_not_assigned, R)
                 return True, result
+            else:
+                assigned = assigned[:-1]
 
     return False, []

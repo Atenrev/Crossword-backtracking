@@ -30,6 +30,24 @@ class Word:
     def get_size(self):
         return self.size
 
+    def is_compatible_word(self, word, intersections: np.array):
+        """
+         Given a word and a matrix of intersections, it returns if the word is compatible
+         with self in the crossword (on the corresponding positions)
+            Args:
+                word (object of class Word): The second word.
+                intersections (numpy matrix): A matrix containing the intersections of the crossword.
+            Returns:
+                (bool): True iif the words are compatible.
+        """
+        index_1 = intersections[self.identifier][word.identifier]
+
+        if index_1 != -1:
+            index_2 = intersections[word.identifier][self.identifier]
+            return self[index_1] == word[index_2]
+
+        return True
+
     def is_compatible(self, word, intersections: np.array):
         """
          Given a word and a matrix of intersections, it returns if the word is compatible
