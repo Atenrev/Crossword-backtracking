@@ -1,3 +1,4 @@
+import time
 from crossword import *
 import copy
 
@@ -15,10 +16,16 @@ def satisfies_restrictions(word: Word, assigned: list, R: np.array):
     """
 
     for variable in assigned:
-        if not word.is_compatible(variable, R):
-            return False
-    return True
+        index_1 = R[word.identifier][variable.identifier]
 
+        if index_1 != -1:
+            index_2 = R[variable.identifier][word.identifier]
+            if word[index_1] != variable[index_2]:
+                return False
+
+        # if not word.is_compatible(variable, R):
+        #     return False
+    return True
 
 
 def backtracking_raw(assigned: list, not_assigned: list, R: np.array, C: dict):
@@ -60,20 +67,32 @@ def backtracking_raw(assigned: list, not_assigned: list, R: np.array, C: dict):
 
 def forward_checking(assigned_word: Word, not_assigned: list, R: np.array):
     for word in not_assigned:
-        if word.size == assigned_word.size and assigned_word.word in word.candidates: #abans estava al backtracking, m'ho porto aquí per no recòrrer dos cops la mateixa llista, afegeixo lo del size per no fer cerca en la llista si no cal
-            word.candidates.remove(assigned_word.word)
-            if not word.candidates: #no serveix amb lo d'abaix, potser tenen el mateix tamany i no interseccionen
-                return False, []
+        stack_pointer = 0
+
+        if word.size == assigned_word.size and assigned_word.word in word.candidates:
+            word.excluded.append(assigned_word.word)
+            stack_pointer += 1
+
+            if len(word.excluded) == len(word.candidates):
+                word.stack_pointer_list.append(stack_pointer)
+                return False
 
         index_1 = R[assigned_word.identifier][word.identifier]
         if index_1 != -1:
             index_2 = R[word.identifier][assigned_word.identifier]
-            word.candidates = [c for c in word.candidates if c[index_2] == assigned_word[index_1]] #això s'ha de fer a pal sec, si cridem al is_compatible en bucle és mortal
 
-            if not word.candidates:  #si en algun moment una paraula no té candidats, podem
-                return False, []
+            for c in word.candidates:
+                if c[index_2] != assigned_word[index_1]:
+                    word.excluded.append(c)
+                    stack_pointer += 1
 
-    return True, not_assigned
+            if len(word.excluded) == len(word.candidates):
+                word.stack_pointer_list.append(stack_pointer)
+                return False
+
+        word.stack_pointer_list.append(stack_pointer)
+
+    return True
 
 
 def backtracking(assigned: list, not_assigned: list, R: np.array):
@@ -91,22 +110,44 @@ def backtracking(assigned: list, not_assigned: list, R: np.array):
     if not not_assigned:
         return True, assigned
 
-    word = not_assigned.pop(0)
+    # Afagar el word amb menys candidats
+    index = 0
+    for i in range(1, len(not_assigned)):
+        if len(not_assigned[i].candidates) < len(not_assigned[index].candidates):
+            index = i
+
+    word = not_assigned.pop(index)
     candidates = word.candidates
+    excluded = word.excluded
 
     for candidate in candidates:
+        if candidate in excluded:
+            pass
+
         word.set_word(candidate)
 
-        success_forward, result_forward = forward_checking(word, copy.deepcopy(not_assigned), R)
-        if satisfies_restrictions(word, assigned, R) and success_forward:
-            assigned.append(word)
-            new_not_assigned = result_forward
+        if satisfies_restrictions(word, assigned, R):
+            part1 = time.time()
+            success_forward = forward_checking(word, not_assigned, R)
+            part2 = time.time()
+            print("FC TIME ==> {}s".format(part2-part1))
 
-            success, result = backtracking(copy.deepcopy(assigned), copy.deepcopy(new_not_assigned), R)
+            if success_forward:
+                assigned.append(word)
+                success, result = backtracking(assigned, not_assigned, R)
 
-            if success:
-                return True, result
-            else:
-                assigned = assigned[:-1]
+                if success:
+                    return True, result
+                else:
+                    assigned.pop()
 
+            # part5 = time.time()
+            for na in not_assigned:
+                if len(na.stack_pointer_list) > 0:
+                    pointer = na.stack_pointer_list.pop()
+                    del na.excluded[len(na.excluded)-pointer:]
+            # part6 = time.time()
+            # print("RESET TIME ==> {}s".format(part6-part5))
+
+    not_assigned.insert(index, word)
     return False, []

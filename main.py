@@ -16,7 +16,7 @@ def main():
         copy.deepcopy(cb.intersections),
     )
     cb.set_words(result)
-    cb.print_words()
+    # cb.print_words()
     print(cb)
 
     ca = Crossword.from_filenames(a_dict, a_cross)
@@ -25,9 +25,8 @@ def main():
         copy.deepcopy(ca.words),
         copy.deepcopy(ca.intersections),
     )
-    print(success)
     ca.set_words(result)
-    ca.print_words()
+    # ca.print_words()
     print(ca)
 
 
