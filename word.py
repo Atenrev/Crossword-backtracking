@@ -17,6 +17,7 @@ class Word:
         self.size = size
         self.word = ""
         self.candidates = candidates
+        self.removed = []
 
     def set_word(self, word: str):
         self.word = word

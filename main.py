@@ -1,5 +1,6 @@
 from crossword import *
 from search_algorithms import backtracking
+import time
 
 
 a_cross = "res/crossword_A_v2.txt"
@@ -9,6 +10,12 @@ b_dict = "res/diccionari_CB_v2.txt"
 
 
 def main():
+    a_cross_medium = "test/crossword_medium.txt"
+    a_dict_medium = "test/diccionari_medium.txt"
+    cw_medium = Crossword.from_filenames(a_dict_medium, a_cross_medium)
+    solucio_medium, words_medium = backtracking([], copy.deepcopy(cw_medium.words), cw_medium.intersections)
+
+
     cb = Crossword.from_filenames(b_dict, b_cross)
     success, result = backtracking(
         [],
@@ -20,11 +27,10 @@ def main():
     print(cb)
 
     ca = Crossword.from_filenames(a_dict, a_cross)
-    success, result = backtracking(
-        [],
-        copy.deepcopy(ca.words),
-        copy.deepcopy(ca.intersections),
-    )
+    start = time.time()
+    success, result = backtracking([], copy.deepcopy(ca.words), ca.intersections)
+    end = time.time()
+    print(end-start)
     print(success)
     ca.set_words(result)
     ca.print_words()

@@ -58,22 +58,27 @@ def backtracking_raw(assigned: list, not_assigned: list, R: np.array, C: dict):
     return False, []
 
 
-def forward_checking(assigned_word: Word, not_assigned: list, R: np.array):
+def forward_checking(assigned_word: Word, not_assigned: list, R: np.array, removed: dict):
     for word in not_assigned:
-        if word.size == assigned_word.size and assigned_word.word in word.candidates: #abans estava al backtracking, m'ho porto aquí per no recòrrer dos cops la mateixa llista, afegeixo lo del size per no fer cerca en la llista si no cal
+        if word.size == assigned_word.size and assigned_word.word in word.candidates:
             word.candidates.remove(assigned_word.word)
-            if not word.candidates: #no serveix amb lo d'abaix, potser tenen el mateix tamany i no interseccionen
-                return False, []
+            removed[word.identifier].append(assigned_word.word)
+            if not word.candidates:
+                return False
 
         index_1 = R[assigned_word.identifier][word.identifier]
         if index_1 != -1:
             index_2 = R[word.identifier][assigned_word.identifier]
-            word.candidates = [c for c in word.candidates if c[index_2] == assigned_word[index_1]] #això s'ha de fer a pal sec, si cridem al is_compatible en bucle és mortal
 
-            if not word.candidates:  #si en algun moment una paraula no té candidats, podem
-                return False, []
+            candidates = []
+            for c in word.candidates:
+                (removed[word.identifier], candidates)[c[index_2] == assigned_word[index_1]].append(c)
+            word.candidates = candidates
 
-    return True, not_assigned
+            if not word.candidates:
+                return False
+
+    return True
 
 
 def backtracking(assigned: list, not_assigned: list, R: np.array):
@@ -91,22 +96,31 @@ def backtracking(assigned: list, not_assigned: list, R: np.array):
     if not not_assigned:
         return True, assigned
 
-    word = not_assigned.pop(0)
+    index = min(range(0, len(not_assigned)), key=lambda x: len(not_assigned[x].candidates))
+    word = not_assigned.pop(index)
     candidates = word.candidates
 
+    removed = {}
+    for w in not_assigned:
+        removed[w.identifier] = []
+
     for candidate in candidates:
+
         word.set_word(candidate)
+        if satisfies_restrictions(word, assigned, R):
+            success_forward = forward_checking(word, not_assigned, R, removed)
+            if success_forward:
+                assigned.append(word)
+                success, result = backtracking(assigned, not_assigned, R)
 
-        success_forward, result_forward = forward_checking(word, copy.deepcopy(not_assigned), R)
-        if satisfies_restrictions(word, assigned, R) and success_forward:
-            assigned.append(word)
-            new_not_assigned = result_forward
+                if success:
+                    return True, result
+                else:
+                    assigned.pop()
 
-            success, result = backtracking(copy.deepcopy(assigned), copy.deepcopy(new_not_assigned), R)
+            for w in not_assigned:
+                w.candidates = w.candidates + removed[w.identifier]
+                removed[w.identifier] = []
 
-            if success:
-                return True, result
-            else:
-                assigned = assigned[:-1]
-
+    not_assigned.insert(index, word)
     return False, []
