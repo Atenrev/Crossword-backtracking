@@ -59,8 +59,20 @@ def backtracking_raw(assigned: list, not_assigned: list, R: np.array, C: dict):
 
 
 def forward_checking(assigned_word: Word, not_assigned: list, R: np.array, removed: dict):
+    """
+     This method will update the candidates list of each word. If any list results empty, the method returns false.
+        Args:
+            assigned_word (object of the class word): Contains the last assigned word.
+            not_assigned (list): Contains the list of the Word to be assigned.
+            R (numpy array): Matrix containing the restrictions of the problem (the intersections of the crossword).
+            removed (dict): Dictionary which will save each removed word from each list of candidates on this function.
+        Returns:
+            (bool): True if there isn't any empty list of candidates.
+    """
     for word in not_assigned:
         if word.size == assigned_word.size and assigned_word.word in word.candidates:
+            #remove the assigned word from every candidates list
+
             word.candidates.remove(assigned_word.word)
             removed[word.identifier].append(assigned_word.word)
             if not word.candidates:
@@ -70,6 +82,7 @@ def forward_checking(assigned_word: Word, not_assigned: list, R: np.array, remov
         if index_1 != -1:
             index_2 = R[word.identifier][assigned_word.identifier]
 
+            #propagate the restrictions involving the assigned word
             candidates = []
             for c in word.candidates:
                 (removed[word.identifier], candidates)[c[index_2] == assigned_word[index_1]].append(c)
@@ -96,11 +109,11 @@ def backtracking(assigned: list, not_assigned: list, R: np.array):
     if not not_assigned:
         return True, assigned
 
-    index = min(range(0, len(not_assigned)), key=lambda x: len(not_assigned[x].candidates))
+    index = min(range(0, len(not_assigned)), key=lambda x: len(not_assigned[x].candidates)) #min remaining values
     word = not_assigned.pop(index)
     candidates = word.candidates
 
-    removed = {}
+    removed = {} # dictionary of the removed words on each node of the searching tree
     for w in not_assigned:
         removed[w.identifier] = []
 
@@ -116,11 +129,12 @@ def backtracking(assigned: list, not_assigned: list, R: np.array):
                 if success:
                     return True, result
                 else:
-                    assigned.pop()
+                    assigned.pop() # preparation previous to the backtracking
 
             for w in not_assigned:
+                # preparation previous to the backtracking
                 w.candidates = w.candidates + removed[w.identifier]
                 removed[w.identifier] = []
 
-    not_assigned.insert(index, word)
+    not_assigned.insert(index, word) # preparation previous to the backtracking
     return False, []
