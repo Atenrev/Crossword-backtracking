@@ -16,9 +16,8 @@ class Word:
         self.identifier = identifier
         self.size = size
         self.word = ""
-        self.candidates = candidates
-        self.excluded = []
-        self.stack_pointer_list = []
+        self.candidates = set(candidates)
+        self.removed = []
 
     def set_word(self, word: str):
         self.word = word

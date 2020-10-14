@@ -1,4 +1,3 @@
-import time
 from crossword import *
 import copy
 
@@ -16,15 +15,8 @@ def satisfies_restrictions(word: Word, assigned: list, R: np.array):
     """
 
     for variable in assigned:
-        index_1 = R[word.identifier][variable.identifier]
-
-        if index_1 != -1:
-            index_2 = R[variable.identifier][word.identifier]
-            if word[index_1] != variable[index_2]:
-                return False
-
-        # if not word.is_compatible(variable, R):
-        #     return False
+        if not word.is_compatible(variable, R):
+            return False
     return True
 
 
@@ -65,32 +57,41 @@ def backtracking_raw(assigned: list, not_assigned: list, R: np.array, C: dict):
     return False, []
 
 
-def forward_checking(assigned_word: Word, not_assigned: list, R: np.array):
+def forward_checking(assigned_word: Word, not_assigned: list, R: np.array, removed: dict):
+    """
+     This method will update the candidates list of each word. If any list results empty, the method returns false.
+        Args:
+            assigned_word (object of the class word): Contains the last assigned word.
+            not_assigned (list): Contains the list of the Word to be assigned.
+            R (numpy array): Matrix containing the restrictions of the problem (the intersections of the crossword).
+            removed (dict): Dictionary which will save each removed word from each list of candidates on this function.
+        Returns:
+            (bool): True if there isn't any empty list of candidates.
+    """
     for word in not_assigned:
-        stack_pointer = 0
-
         if word.size == assigned_word.size and assigned_word.word in word.candidates:
-            word.excluded.append(assigned_word.word)
-            stack_pointer += 1
-
-            if len(word.excluded) == len(word.candidates):
-                word.stack_pointer_list.append(stack_pointer)
+            # remove the assigned word from every candidates list
+            word.candidates.remove(assigned_word.word)
+            removed[word.identifier].add(assigned_word.word)
+            if len(word.candidates) == 0:
                 return False
 
         index_1 = R[assigned_word.identifier][word.identifier]
         if index_1 != -1:
             index_2 = R[word.identifier][assigned_word.identifier]
 
+            # propagate the restrictions involving the assigned word
+            # candidates = []
             for c in word.candidates:
+                #     (removed[word.identifier], candidates)[
+                #         c[index_2] == assigned_word[index_1]].append(c)
                 if c[index_2] != assigned_word[index_1]:
-                    word.excluded.append(c)
-                    stack_pointer += 1
+                    removed[word.identifier].add(c)
 
-            if len(word.excluded) == len(word.candidates):
-                word.stack_pointer_list.append(stack_pointer)
+            word.candidates = word.candidates - removed[word.identifier]
+
+            if len(word.candidates) == 0:
                 return False
-
-        word.stack_pointer_list.append(stack_pointer)
 
     return True
 
@@ -110,27 +111,20 @@ def backtracking(assigned: list, not_assigned: list, R: np.array):
     if not not_assigned:
         return True, assigned
 
-    # Afagar el word amb menys candidats
-    index = 0
-    for i in range(1, len(not_assigned)):
-        if len(not_assigned[i].candidates) < len(not_assigned[index].candidates):
-            index = i
-
+    index = min(range(0, len(not_assigned)), key=lambda x: len(
+        not_assigned[x].candidates))  # min remaining values
     word = not_assigned.pop(index)
     candidates = word.candidates
-    excluded = word.excluded
+
+    removed = {}  # dictionary of the removed words on each node of the searching tree
+    for w in not_assigned:
+        removed[w.identifier] = set()
 
     for candidate in candidates:
-        if candidate in excluded:
-            pass
-
         word.set_word(candidate)
 
         if satisfies_restrictions(word, assigned, R):
-            part1 = time.time()
-            success_forward = forward_checking(word, not_assigned, R)
-            part2 = time.time()
-            print("FC TIME ==> {}s".format(part2-part1))
+            success_forward = forward_checking(word, not_assigned, R, removed)
 
             if success_forward:
                 assigned.append(word)
@@ -139,15 +133,13 @@ def backtracking(assigned: list, not_assigned: list, R: np.array):
                 if success:
                     return True, result
                 else:
-                    assigned.pop()
+                    assigned.pop()  # preparation previous to the backtracking
 
-            # part5 = time.time()
-            for na in not_assigned:
-                if len(na.stack_pointer_list) > 0:
-                    pointer = na.stack_pointer_list.pop()
-                    del na.excluded[len(na.excluded)-pointer:]
-            # part6 = time.time()
-            # print("RESET TIME ==> {}s".format(part6-part5))
+            for w in not_assigned:
+                # preparation previous to the backtracking
+                w.candidates.update(removed[w.identifier])
+                removed[w.identifier] = set()
 
+    # preparation previous to the backtracking
     not_assigned.insert(index, word)
     return False, []
